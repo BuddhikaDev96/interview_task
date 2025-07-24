@@ -1,57 +1,81 @@
 import { useState } from "react";
 
-function Task({ props }) {
-  const [tags, setTags] = useState([]);
+function Task({ task, onUpdate, onDelete }) {
+  const [tagInput, setTagInput] = useState("");
+
   function addTag(e) {
-    if (e.key === "Enter") {
-        
-     tags.push(e.target.value);
-      setTags([...tags]);
-      e.target.value = "";
+    if (e.key === "Enter" && tagInput.trim() !== "" && task.tags.length < 3) {
+      task.tags.push(tagInput.trim());
+      setTagInput("");
+      onUpdate();
     }
   }
+
   function removeTag(tag) {
-  //  props.tags.splice(props.tags.indexOf(tag), 1);
-    setTags([...props.tags]);
+    task.tags = task.tags.filter((t) => t !== tag);
+    onUpdate();
   }
+
   return (
-    <div className="card task">
-      <div className="card-body">
-        <p className="card-title">{props.name}</p>
+    <div className="card task ">
+      <div className="d-flex">
+        <button className="btn-close ms-auto" onClick={() => onDelete(task.id)} aria-label="Delete" ></button>
+      </div>
+
+      <div className="card-body pt-0">
+        <p className="card-title">{task.name}</p>
         <select
-          name="task"
-          id=""
+          className="form-select col-12 mb-3"
+          value={task.status}
           onChange={(e) => {
-            props.status = e.target.value;
+            task.status = e.target.value;
+            onUpdate();
           }}
-          value={props.status}
         >
-          <option key="todo" value="todo">
+          <option
+            value="todo"
+            disabled={task.status === "ongoing" || task.status === "completed"}
+          >
             TODO
           </option>
-          <option key="ongoing" value="ongoing">
+          <option value="ongoing" disabled={task.status === "completed"}>
             ONGOING
           </option>
-          <option key="completed" value="completed">
-            COMPLETED
-          </option>
+          <option value="completed">COMPLETED</option>
         </select>
+
         <input
           type="text"
-          placeholder="Add Tags"
-          className="col-12"
-          disabled={props.tags.length >= 2}
+          className="form-control col-12"
+          value={tagInput}
+          onChange={(e) => setTagInput(e.target.value)}
           onKeyDown={addTag}
-        ></input>
-        {tags.map((tag) => (
-            
-          <div >
-            <p>{tag}</p>
-            <button className="btn" onClick={removeTag(tag)}>
-              X
-            </button>
-          </div>
-        ))}
+          placeholder="Add Tags"
+          disabled={task.tags.length >= 3}
+        />
+
+        <div className="d-flex flex-wrap mt-2">
+          {task.tags.map((tag) => (
+            <span
+              key={tag}
+              className="badge  me-2 mb-2 d-flex align-items-center"
+              style={{
+                fontSize: "1em",
+                padding: "0.5em 0.75em",
+                backgroundColor: "gray",
+                color: "white",
+              }}
+            >
+              {tag}
+              <button
+                type="button"
+                className="btn-close btn-close-white ms-2"
+                aria-label="Remove"
+                onClick={() => removeTag(tag)}
+              />
+            </span>
+          ))}
+        </div>
       </div>
     </div>
   );
